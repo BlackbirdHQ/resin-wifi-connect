@@ -24,15 +24,18 @@ main() {
         say "Deploying only when CIRCLE_TAG is defined"
         exit 0
     fi
-    
+
     # Get the list with CircleCI build numbers for the current tagged release
     local _builds
     local _filter
     local _build_nums
-    
+
     _builds=$(ensure circle "$CIRCLE_FULL_ENDPOINT")
+    echo $_builds
     _filter='.[] | select(.vcs_tag == "'$CIRCLE_TAG'" and .vcs_revision == "'$CIRCLE_SHA1'" and .workflows.job_name != "deploy") | .build_num'
+    echo $_filter
     _build_nums=$(ensure jq "$_filter" <<< "$_builds")
+    echo $_build_nums
 
     if [ -z "$_build_nums" ]; then
         err "No builds for tagged release $CIRCLE_TAG"
@@ -98,10 +101,10 @@ main() {
         local _state
 
         _basename=$(ensure basename "$_file")
-        _mimetype=$(ensure file --mime-type -b "$_file") 
+        _mimetype=$(ensure file --mime-type -b "$_file")
 
         say "Uploading $_basename..."
-        
+
         _response=$(
             curl -sSL -X POST "$_upload_url?name=$_basename" \
                 -H "Accept: application/vnd.github.manifold-preview" \
