@@ -10,7 +10,7 @@ build: &build
     - checkout
 
     - run: cargo build --release --target=$TARGET
- 
+
     - run: cross-strip target/$TARGET/release/$BINARY
 
     - run: |
@@ -79,10 +79,6 @@ jobs:
   deploy:
     docker:
       - image: majorz/rust-test-deploy:rust-nightly-2018-01-08
-
-    environment:
-      GITHUB_USER: resin-io
-      GITHUB_REPO: resin-wifi-connect
 
     steps:
       - checkout

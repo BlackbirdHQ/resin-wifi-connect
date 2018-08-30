@@ -5,6 +5,8 @@ set -u
 trap "exit 1" TERM
 export TOP_PID=$$
 
+: "${GITHUB_USER:=resin-io}"
+: "${GITHUB_REPO:=resin-wifi-connect}"
 : "${APPNAME:=deploy}"
 : "${CIRCLE_FULL_ENDPOINT:=https://circleci.com/api/v1.1/project/github/$GITHUB_USER/$GITHUB_REPO}"
 : "${CIRCLE_TAG:=}"
@@ -24,12 +26,17 @@ main() {
         say "Deploying only when CIRCLE_TAG is defined"
         exit 0
     fi
-    
+
+    if [ -z "$GITHUB_TOKEN" -o -z "$CIRCLE_TOKEN" ]; then
+        say "API keys for GitHub or CircleCI aren't defined. Exiting..."
+        exit 0
+    fi
+
     # Get the list with CircleCI build numbers for the current tagged release
     local _builds
     local _filter
     local _build_nums
-    
+
     _builds=$(ensure circle "$CIRCLE_FULL_ENDPOINT")
     _filter='.[] | select(.vcs_tag == "'$CIRCLE_TAG'" and .vcs_revision == "'$CIRCLE_SHA1'" and .workflows.job_name != "deploy") | .build_num'
     _build_nums=$(ensure jq "$_filter" <<< "$_builds")
@@ -98,10 +105,10 @@ main() {
         local _state
 
         _basename=$(ensure basename "$_file")
-        _mimetype=$(ensure file --mime-type -b "$_file") 
+        _mimetype=$(ensure file --mime-type -b "$_file")
 
         say "Uploading $_basename..."
-        
+
         _response=$(
             curl -sSL -X POST "$_upload_url?name=$_basename" \
                 -H "Accept: application/vnd.github.manifold-preview" \
