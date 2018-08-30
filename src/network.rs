@@ -53,7 +53,7 @@ impl NetworkCommandHandler {
 
         Self::spawn_trap_exit_signals(exit_tx, network_tx.clone());
 
-        let manager = NetworkManager::with_method_timeout(30);
+        let manager = NetworkManager::with_method_timeout(60);
         debug!("NetworkManager connection initialized");
 
         let device = find_device(&manager, &config.interface)?;
